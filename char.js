@@ -2,7 +2,7 @@ const cnvsAlpha = document.getElementById('left')
 const cnvsImage = document.getElementById('right')
 
 const img = new Image()
-img.src = './otter.jpg'
+img.src = './flower.jpeg'
 img.onload = () => {
   setItOff()
 }
@@ -15,7 +15,7 @@ const setItOff = () => {
   cnvsAlpha.width = img.width
 
   const ctxAlpha = cnvsAlpha.getContext('2d')
-  const fontHeight = 12
+  const fontHeight = 24
 
   ctxAlpha.textBaseline = 'hanging'
   ctxAlpha.font = `${fontHeight}px monospace`
