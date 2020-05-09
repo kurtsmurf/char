@@ -9,7 +9,7 @@ img.src = './flower.jpeg'
 img.onload = () => {
   cnvsImage.height = img.height
   cnvsImage.width = img.width
-  
+
   cnvsAlpha.height = img.height
   cnvsAlpha.width = img.width
 
@@ -17,12 +17,10 @@ img.onload = () => {
   ctxImg.filter = 'grayscale()'
   ctxImg.drawImage(img, 0, 0)
 
-  worker.postMessage(ctxImg.getImageData(0,0,img.width,img.height))
+  worker.postMessage(ctxImg.getImageData(0, 0, img.width, img.height))
 }
 
 worker.onmessage = e => {
-  console.log(e.data)  
-
   cnvsAlpha.getContext('2d').putImageData(e.data, 0, 0)
 }
 
