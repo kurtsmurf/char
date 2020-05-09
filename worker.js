@@ -53,13 +53,13 @@ onmessage = e => {
     return cell.data.filter((v, i) => i % 4 === 0)
   })
 
-  const imageAsChars = cells.map(cell => {
+  const resultChars = cells.map(cell => {
     return chars[getBestGlyph(cell, glyphs).index]
   })
 
   offscreenContext.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height)
 
-  imageAsChars.forEach((char, index) => {
+  resultChars.forEach((char, index) => {
     const x = (index % widthInChars) * charWidth
     const y = (Math.floor(index / widthInChars)) * fontSize
 
