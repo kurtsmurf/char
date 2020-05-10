@@ -35,7 +35,7 @@ const stopLoadingAnimation = () => {
   clearTimeout(animationTimeout)
 }
 
-img.onload = () => {
+const processImage = img => {
   cnvsImage.height = img.height
   cnvsImage.width = img.width
 
@@ -50,9 +50,39 @@ img.onload = () => {
   worker.postMessage(ctxImg.getImageData(0, 0, img.width, img.height))
 }
 
+img.onload = () => {
+  processImage(img)
+}
+
 worker.onmessage = e => {
   stopLoadingAnimation()
   cnvsAlpha.getContext('2d').putImageData(e.data, 0, 0)
 }
 
 worker.onerror = e => console.log(e)
+
+const fileInput = document.getElementById('fileElem')
+
+fileInput.addEventListener('change', (e) => handleFiles(e.target.files))
+
+function handleFiles(files) {
+  arr = [...files]
+  arr.forEach(handleFile)
+}
+
+handleFile = (file) => {
+  const reader = new FileReader()
+  
+  reader.onload = e => {
+    let img = new Image()
+
+    img.onload = e => {
+      cnvsImage.getContext('2d').drawImage(img,0,0)
+      processImage(img)
+    }
+    
+    img.src = e.target.result
+  }
+
+  reader.readAsDataURL(file)
+}
