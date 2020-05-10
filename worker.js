@@ -20,7 +20,7 @@ const getBestGlyph = (cell, glyphs) => {
 
 onmessage = e => {
   const offscreenCanvas = new OffscreenCanvas(e.data.width, e.data.height)
-  const fontSize = 32
+  const fontSize = 48
 
   const offscreenContext = offscreenCanvas.getContext('2d')
   offscreenContext.textBaseline = 'hanging'
