@@ -56,15 +56,6 @@ onmessage = e => {
     return chars[getBestGlyph(cell, glyphs).index]
   })
 
-  offscreenContext.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height)
-
-  resultChars.forEach((char, index) => {
-    const x = (index % widthInChars) * charWidth
-    const y = (Math.floor(index / widthInChars)) * fontSize
-
-    offscreenContext.fillText(char, x, y)
-  })
-
   const resultStr = resultChars.reduce((previous, current, index) => {
     if (index % widthInChars === widthInChars - 1) {
       return previous + current + '\n'
@@ -75,5 +66,9 @@ onmessage = e => {
 
   console.log(resultStr)
 
-  postMessage(offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height))
+  // postMessage(offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height))
+  postMessage({
+    result: resultStr,
+    fontSize: fontSize
+  })
 }

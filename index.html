@@ -5,27 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Characterize</title>
     <style>
-        /* body {
-            margin: 0;
+        body {
             display: flex;
-            align-items: center;
-            justify-content: space-evenly;
-            height: 100vh;
+            flex-flow: row wrap;
         }
-        canvas {
-            max-width: 45vw;
-            max-height: 90vh;
-            box-sizing: border-box;
-            border: .5vmin solid black;
+        #source {
+            height: 50vh;
         }
-        .waiting {
-            border-color: red;
-        } */
+        #target {
+            font-family: monospace;
+            line-height: 1.1;
+            font-size: calc(50vh / 64);
+        }
     </style>
 </head>
 <body>
-    <canvas id="alpha"></canvas>
-    <canvas id="image"></canvas>
+    <img id="source" alt="The image to be characterized">
+    <pre id="target"></pre>
     <form>
         <input type="file" id="fileElem" accept="image/*">
     </form>  
