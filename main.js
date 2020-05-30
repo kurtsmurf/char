@@ -1,7 +1,7 @@
 const worker = new Worker('worker.js')
 
-const cnvsAlpha = document.getElementById('left')
-const cnvsImage = document.getElementById('right')
+const cnvsAlpha = document.getElementById('alpha')
+const cnvsImage = document.getElementById('image')
 
 const img = new Image()
 img.src = './trees.jpeg'

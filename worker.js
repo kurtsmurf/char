@@ -7,9 +7,7 @@ const diff = (a, b) => {
 
 const getBestGlyph = (cell, glyphs) => {
   return glyphs
-    .map(glyph => {
-      return diff(glyph, cell)
-    })
+    .map(glyph => diff(glyph, cell))
     .reduce((best, current, index) => {
       return {
         value: current > best.value ? current : best.value,
@@ -50,6 +48,7 @@ onmessage = e => {
     const y = Math.floor(i / widthInChars) * fontSize
 
     const cell = offscreenContext.getImageData(x, y, charWidth, fontSize)
+
     return cell.data.filter((v, i) => i % 4 === 0)
   })
 
