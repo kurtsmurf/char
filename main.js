@@ -5,6 +5,22 @@ img.src = './trees.jpeg'
 
 const pre = document.getElementById('target')
 
+const getLineHeight = () => {
+  const pre = document.createElement('pre')
+  pre.style.position = 'absolute'
+  pre.style.top = -1000
+  pre.innerText = 'A'
+
+  document.body.appendChild(pre)
+
+  const lineHeight =  pre.getBoundingClientRect().height
+    / pre.computedStyleMap().get('font-size').value
+
+  document.body.removeChild(pre)
+
+  return lineHeight
+}
+
 const processImage = img => {
   const canvas = document.createElement('canvas')
 
@@ -17,7 +33,10 @@ const processImage = img => {
 
   const imageData = context.getImageData(0, 0, img.naturalWidth, img.naturalHeight)
 
-  worker.postMessage(imageData)
+  worker.postMessage({
+    imageData: imageData,
+    lineHeight: getLineHeight()
+  })
 }
 
 img.onload = () => {

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Characterize</title>
     <style>
-        body {
+        main {
             display: flex;
             flex-flow: row wrap;
         }
@@ -13,18 +13,18 @@
             height: 50vh;
         }
         #target {
-            font-family: monospace;
-            line-height: 1.1;
-            font-size: calc(50vh / 64);
+            margin: 0;
         }
     </style>
 </head>
 <body>
-    <img id="source" alt="The image to be characterized">
-    <pre id="target"></pre>
     <form>
         <input type="file" id="fileElem" accept="image/*">
-    </form>  
+    </form>
+    <main>
+        <img id="source" alt="The image to be characterized">
+        <pre id="target"></pre>
+    </main>    
 </body>
 </html>
 <script src="main.js"></script>

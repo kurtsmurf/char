@@ -17,11 +17,13 @@ const getBestGlyph = (cell, glyphs) => {
 }
 
 onmessage = e => {
-  const offscreenCanvas = new OffscreenCanvas(e.data.width, e.data.height)
-  const fontSize = e.data.height / 64
+  const imageData = e.data.imageData
+  const lineHeight = e.data.lineHeight
+  const offscreenCanvas = new OffscreenCanvas(imageData.width, imageData.height)
+  const actualLineHeight = imageData.height / 64
+  const fontSize = actualLineHeight / lineHeight
 
   const offscreenContext = offscreenCanvas.getContext('2d')
-  offscreenContext.textBaseline = 'hanging'
   offscreenContext.font = fontSize + 'px monospace'
 
   const charWidth = offscreenContext.measureText('M').width
@@ -29,25 +31,25 @@ onmessage = e => {
   const chars = [...new Array(95)].map((_, i) => String.fromCharCode(i + 32))
 
   const glyphs = chars.map(char => {
-    offscreenContext.clearRect(0, 0, charWidth, fontSize)
-    offscreenContext.fillText(char, 0, 0)
+    offscreenContext.clearRect(0, 0, charWidth, actualLineHeight)
+    offscreenContext.fillText(char, 0, fontSize)
 
-    const glyph = offscreenContext.getImageData(0, 0, charWidth, fontSize)
+    const glyph = offscreenContext.getImageData(0, 0, charWidth, actualLineHeight)
 
     return glyph.data.filter((v, i) => i % 4 === 3)
   })
 
   offscreenContext.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height)
-  offscreenContext.putImageData(e.data, 0, 0)
+  offscreenContext.putImageData(imageData, 0, 0)
 
-  const widthInChars = Math.ceil(e.data.width / charWidth)
-  const heightInChars = Math.ceil(e.data.height / fontSize)
+  const widthInChars = Math.ceil(imageData.width / charWidth)
+  const heightInChars = Math.ceil(imageData.height / actualLineHeight)
 
   const cells = [...new Array(widthInChars * heightInChars)].map((_, i) => {
     const x = (i % widthInChars) * charWidth
-    const y = Math.floor(i / widthInChars) * fontSize
+    const y = Math.floor(i / widthInChars) * actualLineHeight
 
-    const cell = offscreenContext.getImageData(x, y, charWidth, fontSize)
+    const cell = offscreenContext.getImageData(x, y, charWidth, actualLineHeight)
 
     return cell.data.filter((v, i) => i % 4 === 0)
   })
