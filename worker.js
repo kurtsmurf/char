@@ -6,22 +6,23 @@ const diffCells = (a, b) => {
 }
 
 const bestMatch = (cell, encoder) => {
-  return encoder.map(glyphCharPair => {
-    return {
-      pair: glyphCharPair,
-      score: diffCells(glyphCharPair.glyph, cell)
-    }
-  })
-  .reduce((previous, current) => {
-    return current.score > previous.score ? current : previous
-  }).pair.char
+  return encoder
+    .map(glyphCharPair => {
+      return {
+        pair: glyphCharPair,
+        score: diffCells(glyphCharPair.glyph, cell)
+      }
+    })
+    .reduce((previous, current) => {
+      return current.score > previous.score ? current : previous
+    }).pair.char
 }
 
 const createOffscreenContext = (width, height, fontSize = 0) => {
   const offscreenCanvas = new OffscreenCanvas(width, height)
   const offscreenContext = offscreenCanvas.getContext('2d')
   offscreenContext.font = fontSize + 'px monospace'
-  
+
   return offscreenContext
 }
 
@@ -42,7 +43,7 @@ const createCharacterEncoder = (charSet, fontSize, boxWidth, boxHeight) => {
 }
 
 const getImageCells = (imageData, cellWidth, cellHeight, columns, rows) => {
-  const offscreenContext = createOffscreenContext(cellWidth * columns, cellHeight * rows);
+  const offscreenContext = createOffscreenContext(cellWidth * columns, cellHeight * rows)
   offscreenContext.filter = 'grayscale()'
   offscreenContext.putImageData(imageData, 0, 0)
 
@@ -59,7 +60,7 @@ const getImageCells = (imageData, cellWidth, cellHeight, columns, rows) => {
 onmessage = e => {
   const imageData = e.data.imageData
   const lineHeight = e.data.lineHeight
-  const actualLineHeight = imageData.height / 64
+  const actualLineHeight = imageData.height / 64 // TODO: let user configure num lines
   const fontSize = actualLineHeight / lineHeight
   const charWidth = createOffscreenContext(imageData.width, imageData.height, fontSize).measureText('M').width
   const characterSet = [...new Array(95)].map((_, i) => String.fromCharCode(i + 32))
@@ -68,10 +69,8 @@ onmessage = e => {
   const heightInLines = Math.floor(imageData.height / actualLineHeight)
   const imageCells = getImageCells(imageData, charWidth, actualLineHeight, widthInChars, heightInLines)
   const resultChars = imageCells.map(cell => bestMatch(cell, characterEncoder))
-  const result = resultChars.reduce((previous, current, index) => {
-    return index % widthInChars === widthInChars - 1
-      ? previous + current + '\n' :  previous + current
-  })
+  const result = resultChars.reduce((previous, current, index) => index % widthInChars === widthInChars - 1
+                                                                  ? previous + current + '\n' : previous + current)
 
   postMessage({ result, fontSize })
 }

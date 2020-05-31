@@ -13,8 +13,8 @@ const getLineHeight = () => {
 
   document.body.appendChild(pre)
 
-  const lineHeight =  pre.getBoundingClientRect().height
-    / pre.computedStyleMap().get('font-size').value
+  const lineHeight = pre.getBoundingClientRect().height /
+    pre.computedStyleMap().get('font-size').value
 
   document.body.removeChild(pre)
 
@@ -54,14 +54,14 @@ const fileInput = document.getElementById('fileElem')
 
 fileInput.addEventListener('change', (e) => handleFiles(e.target.files))
 
-function handleFiles(files) {
+function handleFiles (files) {
   arr = [...files]
   arr.forEach(handleFile)
 }
 
 handleFile = (file) => {
   const reader = new FileReader()
-  
+
   reader.onload = e => {
     img.src = e.target.result
   }
