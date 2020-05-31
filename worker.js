@@ -5,15 +5,16 @@ const diff = (a, b) => {
   }, 0)
 }
 
-const getBestGlyph = (cell, glyphs) => {
-  return glyphs
-    .map(glyph => diff(glyph, cell))
-    .reduce((best, current, index) => {
-      return {
-        value: current > best.value ? current : best.value,
-        index: current > best.value ? index : best.index
-      }
-    }, { value: 0, index: 0 })
+const bestCharMatch = (cell, encoder) => {
+  return encoder.map(glyphCharPair => {
+    return {
+      pair: glyphCharPair,
+      score: diff(glyphCharPair.glyph, cell)
+    }
+  })
+  .reduce((best, current) => {
+    return current.score > best.score ? current : best
+  }).pair.char
 }
 
 onmessage = e => {
@@ -30,13 +31,17 @@ onmessage = e => {
 
   const chars = [...new Array(95)].map((_, i) => String.fromCharCode(i + 32))
 
-  const glyphs = chars.map(char => {
+  const encoder = chars.map(char => {
     offscreenContext.clearRect(0, 0, charWidth, actualLineHeight)
     offscreenContext.fillText(char, 0, fontSize)
 
     const glyph = offscreenContext.getImageData(0, 0, charWidth, actualLineHeight)
+    const alphas = glyph.data.filter((v, i) => i % 4 === 3)
 
-    return glyph.data.filter((v, i) => i % 4 === 3)
+    return {
+      char: char,
+      glyph: alphas,
+    }
   })
 
   offscreenContext.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height)
@@ -55,7 +60,7 @@ onmessage = e => {
   })
 
   const resultChars = cells.map(cell => {
-    return chars[getBestGlyph(cell, glyphs).index]
+    return bestCharMatch(cell, encoder)
   })
 
   const resultStr = resultChars.reduce((previous, current, index) => {
@@ -68,7 +73,6 @@ onmessage = e => {
 
   console.log(resultStr)
 
-  // postMessage(offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height))
   postMessage({
     result: resultStr,
     fontSize: fontSize
