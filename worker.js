@@ -1,80 +1,77 @@
-const diff = (a, b) => {
+const diffCells = (a, b) => {
   return a.reduce((acc, curr, i) => {
     const diff = Math.abs(curr - b[i])
     return acc + diff
   }, 0)
 }
 
-const bestCharMatch = (cell, encoder) => {
+const bestMatch = (cell, encoder) => {
   return encoder.map(glyphCharPair => {
     return {
       pair: glyphCharPair,
-      score: diff(glyphCharPair.glyph, cell)
+      score: diffCells(glyphCharPair.glyph, cell)
     }
   })
-  .reduce((best, current) => {
-    return current.score > best.score ? current : best
+  .reduce((previous, current) => {
+    return current.score > previous.score ? current : previous
   }).pair.char
+}
+
+const createOffscreenContext = (width, height, fontSize = 0) => {
+  const offscreenCanvas = new OffscreenCanvas(width, height)
+  const offscreenContext = offscreenCanvas.getContext('2d')
+  offscreenContext.font = fontSize + 'px monospace'
+  
+  return offscreenContext
+}
+
+const createCharacterEncoder = (charSet, fontSize, boxWidth, boxHeight) => {
+  const offscreenContext = createOffscreenContext(boxWidth, boxHeight, fontSize)
+
+  return charSet.map(char => {
+    offscreenContext.clearRect(0, 0, boxWidth, boxHeight)
+    offscreenContext.fillText(char, 0, fontSize)
+
+    const charImage = offscreenContext.getImageData(0, 0, boxWidth, boxHeight)
+
+    // We only care about every 4th byte of the image data (the alpha values)
+    const glyph = charImage.data.filter((v, i) => i % 4 === 3)
+
+    return { char, glyph }
+  })
+}
+
+const getImageCells = (imageData, cellWidth, cellHeight, columns, rows) => {
+  const offscreenContext = createOffscreenContext(cellWidth * columns, cellHeight * rows);
+  offscreenContext.filter = 'grayscale()'
+  offscreenContext.putImageData(imageData, 0, 0)
+
+  return [...new Array(columns * rows)].map((_, i) => {
+    const x = (i % columns) * cellWidth
+    const y = Math.floor(i / columns) * cellHeight
+    const cell = offscreenContext.getImageData(x, y, cellWidth, cellHeight)
+
+    // Since the image is grayscale, all color bytes will be the same - just take the first
+    return cell.data.filter((v, i) => i % 4 === 0)
+  })
 }
 
 onmessage = e => {
   const imageData = e.data.imageData
   const lineHeight = e.data.lineHeight
-  const offscreenCanvas = new OffscreenCanvas(imageData.width, imageData.height)
   const actualLineHeight = imageData.height / 64
   const fontSize = actualLineHeight / lineHeight
-
-  const offscreenContext = offscreenCanvas.getContext('2d')
-  offscreenContext.font = fontSize + 'px monospace'
-
-  const charWidth = offscreenContext.measureText('M').width
-
-  const chars = [...new Array(95)].map((_, i) => String.fromCharCode(i + 32))
-
-  const encoder = chars.map(char => {
-    offscreenContext.clearRect(0, 0, charWidth, actualLineHeight)
-    offscreenContext.fillText(char, 0, fontSize)
-
-    const glyph = offscreenContext.getImageData(0, 0, charWidth, actualLineHeight)
-    const alphas = glyph.data.filter((v, i) => i % 4 === 3)
-
-    return {
-      char: char,
-      glyph: alphas,
-    }
-  })
-
-  offscreenContext.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height)
-  offscreenContext.putImageData(imageData, 0, 0)
-
+  const charWidth = createOffscreenContext(imageData.width, imageData.height, fontSize).measureText('M').width
+  const characterSet = [...new Array(95)].map((_, i) => String.fromCharCode(i + 32))
+  const characterEncoder = createCharacterEncoder(characterSet, fontSize, charWidth, actualLineHeight)
   const widthInChars = Math.floor(imageData.width / charWidth)
-  const heightInChars = Math.floor(imageData.height / actualLineHeight)
-
-  const cells = [...new Array(widthInChars * heightInChars)].map((_, i) => {
-    const x = (i % widthInChars) * charWidth
-    const y = Math.floor(i / widthInChars) * actualLineHeight
-
-    const cell = offscreenContext.getImageData(x, y, charWidth, actualLineHeight)
-
-    return cell.data.filter((v, i) => i % 4 === 0)
+  const heightInLines = Math.floor(imageData.height / actualLineHeight)
+  const imageCells = getImageCells(imageData, charWidth, actualLineHeight, widthInChars, heightInLines)
+  const resultChars = imageCells.map(cell => bestMatch(cell, characterEncoder))
+  const result = resultChars.reduce((previous, current, index) => {
+    return index % widthInChars === widthInChars - 1
+      ? previous + current + '\n' :  previous + current
   })
 
-  const resultChars = cells.map(cell => {
-    return bestCharMatch(cell, encoder)
-  })
-
-  const resultStr = resultChars.reduce((previous, current, index) => {
-    if (index % widthInChars === widthInChars - 1) {
-      return previous + current + '\n'
-    } else {
-      return previous + current
-    }
-  })
-
-  console.log(resultStr)
-
-  postMessage({
-    result: resultStr,
-    fontSize: fontSize
-  })
+  postMessage({ result, fontSize })
 }
