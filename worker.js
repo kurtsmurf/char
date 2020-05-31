@@ -42,8 +42,8 @@ onmessage = e => {
   offscreenContext.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height)
   offscreenContext.putImageData(imageData, 0, 0)
 
-  const widthInChars = Math.ceil(imageData.width / charWidth)
-  const heightInChars = Math.ceil(imageData.height / actualLineHeight)
+  const widthInChars = Math.floor(imageData.width / charWidth)
+  const heightInChars = Math.floor(imageData.height / actualLineHeight)
 
   const cells = [...new Array(widthInChars * heightInChars)].map((_, i) => {
     const x = (i % widthInChars) * charWidth
