@@ -1,0 +1,12 @@
+#App {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+img {
+    height: 50vh;
+}
+
+pre {
+    margin: 0;
+}
